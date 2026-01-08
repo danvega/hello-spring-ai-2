@@ -34,7 +34,7 @@ spring:
     # NEW in 2.0: Google GenAI (Gemini) integration
     google:
       genai:
-        api-key: AIzaSyBUrC6M41kAGMHrxVWIs-H-Y59JdV0ZpqA
+        api-key: ${GOOGLE_GENAI_API_KEY:}
         chat:
           options:
             model: gemini-2.0-flash
