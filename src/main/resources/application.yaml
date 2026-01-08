@@ -1,15 +1,8 @@
 spring:
   application:
     name: hello-spring-ai-2
-
-  # Redis configuration for Chat Memory
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-
   ai:
-    # NEW in 2.0: Official OpenAI Java SDK with Audio I/O
+    # NEW in 2.0: Official OpenAI Java SDK
     openai-sdk:
       api-key: ${OPENAI_API_KEY}
       chat:
@@ -46,6 +39,16 @@ spring:
           redis:
             key-prefix: "spring-ai-chat:"
             time-to-live: 1h
+
+  # Redis configuration for Chat Memory
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  docker:
+    compose:
+      enabled: false
 
 logging:
   level:

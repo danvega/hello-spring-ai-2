@@ -2,7 +2,7 @@ package dev.danvega.sai2.google;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.google.genai.GoogleGenAiChatModel;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.ai.google.genai.GoogleGenAiChatOptions;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -59,6 +59,42 @@ public class GoogleGenAiController {
         );
     }
 
+    /**
+     * NEW in 2.0: Thinking mode with thinkingBudget support.
+     * Uses Gemini 2.5 Pro with extended thinking for complex reasoning tasks.
+     * thinkingBudget controls token allocation: -1 for dynamic, 0 to disable, or specific token count.
+     */
+    @PostMapping("/chat/think")
+    public ThinkingResponse chatWithThinking(@RequestBody ThinkingRequest request) {
+        // Default to dynamic thinking (-1), or use provided budget
+        int budget = request.thinkingBudget() != null ? request.thinkingBudget() : -1;
+
+        var options = GoogleGenAiChatOptions.builder()
+                .model("gemini-2.5-pro")
+                .thinkingBudget(budget)
+                .includeThoughts(true)
+                .build();
+
+        var response = chatClient.prompt()
+                .user(request.message())
+                .options(options)
+                .call()
+                .chatResponse();
+
+        String content = response.getResult().getOutput().getText();
+
+        // Extract thinking/reasoning from metadata if available
+        var thoughts = response.getMetadata().get("thoughts");
+
+        return new ThinkingResponse(
+                content,
+                thoughts != null ? thoughts.toString() : null,
+                budget
+        );
+    }
+
     public record ChatRequest(String message) {}
+    public record ThinkingRequest(String message, Integer thinkingBudget) {}
     public record SafeResponse(String response, Object safetyRatings) {}
+    public record ThinkingResponse(String response, String thoughts, int thinkingBudget) {}
 }
